@@ -24,7 +24,10 @@ public class SpravkiController : ControllerBase
     {
         string? error = ValidateSpravka(spravka);
         if (error is not null) return BadRequest(error);
+        SpravkaType type = SpravkaTypesController.Types.First(t => t.Id == spravka.SpravkaTypeId);
         spravka.Id = Spravki.Count + 1;
+        spravka.Name = type.Name;
+        spravka.Price = type.Price;
         Spravki.Add(spravka);
         return CreatedAtAction(nameof(GetById), new { id = spravka.Id }, spravka);
     }
@@ -36,9 +39,11 @@ public class SpravkiController : ControllerBase
         if (existing is null) return NotFound();
         string? error = ValidateSpravka(spravka);
         if (error is not null) return BadRequest(error);
-        existing.Name = spravka.Name;
+        SpravkaType type = SpravkaTypesController.Types.First(t => t.Id == spravka.SpravkaTypeId);
         existing.PatientId = spravka.PatientId;
-        existing.Price = spravka.Price;
+        existing.SpravkaTypeId = spravka.SpravkaTypeId;
+        existing.Name = type.Name;
+        existing.Price = type.Price;
         return Ok(existing);
     }
 
@@ -53,9 +58,8 @@ public class SpravkiController : ControllerBase
 
     private static string? ValidateSpravka(Spravka spravka)
     {
-        if (string.IsNullOrWhiteSpace(spravka.Name)) return "Название справки обязательно";
         if (!PatientsController.Patients.Any(p => p.Id == spravka.PatientId)) return "Пациент с таким ID не найден";
-        if (spravka.Price <= 0) return "Цена должна быть больше 0";
+        if (!SpravkaTypesController.Types.Any(t => t.Id == spravka.SpravkaTypeId)) return "Вид справки с таким ID не найден";
         return null;
     }
 }
