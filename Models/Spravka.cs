@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MedicalApi;
+namespace MedicalApi.Models;
 
 public class Spravka
 {
