@@ -36,6 +36,11 @@ public class PatientsController : ControllerBase
     [HttpPost]
     public ActionResult<Patient> Create(Patient patient)
     {
+        string? error = ValidatePatient(patient);
+        if (error != null)
+        {
+            return BadRequest(error);
+        }
         patient.Id = _patients.Count + 1;
         _patients.Add(patient);
 
@@ -51,6 +56,12 @@ public class PatientsController : ControllerBase
         {
             return NotFound();
         }
+        string? error = ValidatePatient(patient);
+        if (error != null)
+        {
+            return BadRequest(error);
+        }
+
 
         existing.Name = patient.Name;
         existing.BirthDate = patient.BirthDate;
@@ -72,5 +83,21 @@ public class PatientsController : ControllerBase
 
         _patients.Remove(patient);
         return NoContent();
+    }
+    private string? ValidatePatient(Patient patient)
+    {
+        if (string.IsNullOrWhiteSpace(patient.Name))
+            return "Имя пациента обязательно";
+
+        if (string.IsNullOrWhiteSpace(patient.Phone))
+            return "Телефон обязателен";
+
+        if (patient.BirthDate == default)
+            return "Дата рождения обязательна";
+
+        if (patient.BirthDate.Date > DateTime.Today)
+            return "Дата рождения не может быть в будущем";
+
+        return null;
     }
 }

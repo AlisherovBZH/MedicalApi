@@ -29,6 +29,11 @@ public class SpravkiController : ControllerBase
     [HttpPost]
     public ActionResult<Spravka> Create(Spravka spravka)
     {
+        string? error = ValidateSpravka(spravka);
+        if (error != null)
+        {
+            return BadRequest(error);
+        }
         spravka.Id = _spravki.Count + 1;
         _spravki.Add(spravka);
         return CreatedAtAction(nameof(GetById), new { id = spravka.Id }, spravka);
@@ -37,11 +42,17 @@ public class SpravkiController : ControllerBase
     [HttpPut("{id}")]
     public ActionResult<Spravka> Update(int id, Spravka spravka)
     {
+
         Spravka? existing = _spravki.FirstOrDefault(s => s.Id == id);
 
         if (existing == null)
         {
             return NotFound();
+        }
+        string? error = ValidateSpravka(spravka);
+        if (error != null)
+        {
+            return BadRequest(error);
         }
 
         existing.Name = spravka.Name;
@@ -63,5 +74,19 @@ public class SpravkiController : ControllerBase
 
         _spravki.Remove(spravka);
         return NoContent();
+    }
+
+    private string? ValidateSpravka(Spravka spravka)
+    {
+        if (string.IsNullOrWhiteSpace(spravka.Name))
+            return "Название справки обязательно";
+
+        if (string.IsNullOrWhiteSpace(spravka.PatientName))
+            return "Имя пациента обязательно";
+
+        if (spravka.Price <= 0)
+            return "Цена должна быть больше 0";
+
+        return null;
     }
 }
