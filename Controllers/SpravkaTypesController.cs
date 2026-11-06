@@ -16,9 +16,12 @@ public class SpravkaTypesController : ControllerBase
     };
 
     [HttpGet]
+    [ProducesResponseType(typeof(List<SpravkaType>), StatusCodes.Status200OK)]
     public List<SpravkaType> GetAll() => Types;
 
     [HttpGet("{id}")]
+    [ProducesResponseType(typeof(SpravkaType), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<SpravkaType> GetById(int id)
     {
         SpravkaType? type = Types.FirstOrDefault(t => t.Id == id);
@@ -26,17 +29,22 @@ public class SpravkaTypesController : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType(typeof(SpravkaType), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     public ActionResult<SpravkaType> Create(SpravkaType type)
     {
         string? error = Validate(type);
         if (error is not null) return BadRequest(error);
-        type.Id = Types.Max(t => t.Id) + 1;
+        type.Id = Types.Count == 0 ? 1 : Types.Max(t => t.Id) + 1;
         type.Name = type.Name.Trim();
         Types.Add(type);
         return CreatedAtAction(nameof(GetById), new { id = type.Id }, type);
     }
 
     [HttpPut("{id}")]
+    [ProducesResponseType(typeof(SpravkaType), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<SpravkaType> Update(int id, SpravkaType type)
     {
         SpravkaType? existing = Types.FirstOrDefault(t => t.Id == id);
@@ -51,6 +59,9 @@ public class SpravkaTypesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     public ActionResult Delete(int id)
     {
         SpravkaType? type = Types.FirstOrDefault(t => t.Id == id);

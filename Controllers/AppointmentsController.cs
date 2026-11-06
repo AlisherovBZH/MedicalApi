@@ -10,9 +10,12 @@ public class AppointmentsController : ControllerBase
     public static List<Appointment> Appointments { get; } = new();
 
     [HttpGet]
+    [ProducesResponseType(typeof(List<Appointment>), StatusCodes.Status200OK)]
     public List<Appointment> GetAll() => Appointments;
 
     [HttpGet("{id}")]
+    [ProducesResponseType(typeof(Appointment), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<Appointment> GetById(int id)
     {
         Appointment? appointment = Appointments.FirstOrDefault(a => a.Id == id);
@@ -20,11 +23,13 @@ public class AppointmentsController : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType(typeof(Appointment), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     public ActionResult<Appointment> Create(Appointment appointment)
     {
         string? error = Validate(appointment);
         if (error is not null) return BadRequest(error);
-        appointment.Id = Appointments.Count + 1;
+        appointment.Id = Appointments.Count == 0 ? 1 : Appointments.Max(a => a.Id) + 1;
         appointment.DoctorName = appointment.DoctorName.Trim();
         appointment.Reason = appointment.Reason.Trim();
         appointment.Status = appointment.Status.Trim();
@@ -33,6 +38,9 @@ public class AppointmentsController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [ProducesResponseType(typeof(Appointment), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<Appointment> Update(int id, Appointment appointment)
     {
         Appointment? existing = Appointments.FirstOrDefault(a => a.Id == id);
@@ -48,6 +56,8 @@ public class AppointmentsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult Delete(int id)
     {
         Appointment? appointment = Appointments.FirstOrDefault(a => a.Id == id);

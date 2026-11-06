@@ -10,9 +10,12 @@ public class PatientsController : ControllerBase
     public static List<Patient> Patients = new();
 
     [HttpGet]
+    [ProducesResponseType(typeof(List<Patient>), StatusCodes.Status200OK)]
     public List<Patient> GetAll() => Patients;
 
     [HttpGet("{id}")]
+    [ProducesResponseType(typeof(Patient), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<Patient> GetById(int id)
     {
         Patient? patient = Patients.FirstOrDefault(p => p.Id == id);
@@ -20,6 +23,8 @@ public class PatientsController : ControllerBase
     }
 
     [HttpGet("{id}/spravki")]
+    [ProducesResponseType(typeof(List<Spravka>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<List<Spravka>> GetSpravki(int id)
     {
         if (!Patients.Any(p => p.Id == id)) return NotFound();
@@ -27,16 +32,21 @@ public class PatientsController : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType(typeof(Patient), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     public ActionResult<Patient> Create(Patient patient)
     {
         string? error = ValidatePatient(patient);
         if (error is not null) return BadRequest(error);
-        patient.Id = Patients.Count + 1;
+        patient.Id = Patients.Count == 0 ? 1 : Patients.Max(p => p.Id) + 1;
         Patients.Add(patient);
         return CreatedAtAction(nameof(GetById), new { id = patient.Id }, patient);
     }
 
     [HttpPut("{id}")]
+    [ProducesResponseType(typeof(Patient), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<Patient> Update(int id, Patient patient)
     {
         Patient? existing = Patients.FirstOrDefault(p => p.Id == id);
@@ -51,6 +61,8 @@ public class PatientsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult Delete(int id)
     {
         Patient? patient = Patients.FirstOrDefault(p => p.Id == id);
