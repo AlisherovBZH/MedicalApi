@@ -41,4 +41,36 @@ public class PatientsController : ControllerBase
 
         return CreatedAtAction(nameof(GetById), new { id = patient.Id }, patient);
     }
+
+    [HttpPut("{id}")]
+    public ActionResult<Patient> Update(int id, Patient patient)
+    {
+        Patient? existing = _patients.FirstOrDefault(p => p.Id == id);
+
+        if (existing == null)
+        {
+            return NotFound();
+        }
+
+        existing.Name = patient.Name;
+        existing.BirthDate = patient.BirthDate;
+        existing.Phone = patient.Phone;
+        existing.IsActive = patient.IsActive;
+
+        return Ok(existing);
+    }
+
+    [HttpDelete("{id}")]
+    public ActionResult Delete(int id)
+    {
+        Patient? patient = _patients.FirstOrDefault(p => p.Id == id);
+
+        if (patient == null)
+        {
+            return NotFound();
+        }
+
+        _patients.Remove(patient);
+        return NoContent();
+    }
 }
