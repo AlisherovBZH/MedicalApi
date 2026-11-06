@@ -10,7 +10,12 @@ public class SpravkiController : ControllerBase
     public static List<Spravka> Spravki = new();
 
     [HttpGet]
-    public List<Spravka> GetAll() => Spravki;
+    public List<Spravka> GetAll([FromQuery] int? patientId = null)
+    {
+        if (patientId.HasValue)
+            return Spravki.Where(s => s.PatientId == patientId.Value).ToList();
+        return Spravki;
+    }
 
     [HttpGet("{id}")]
     public ActionResult<Spravka> GetById(int id)
